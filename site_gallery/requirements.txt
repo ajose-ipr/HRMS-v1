@@ -1,0 +1,25 @@
+"""
+Dependencies for site_gallery app
+
+The site_gallery app requires the following packages:
+- Django >= 4.1
+- Pillow >= 9.0 (for image processing)
+- django-filter >= 22.0 (optional, for advanced filtering)
+
+For cloud storage support:
+- django-storages >= 1.13 (optional, for AWS S3 or other cloud providers)
+- boto3 >= 1.20 (optional, for AWS S3 support)
+
+All dependencies are already part of the main Horilla project.
+"""
+
+REQUIRED_PACKAGES = [
+    "Django>=4.1",
+    "Pillow>=9.0",
+]
+
+OPTIONAL_PACKAGES = [
+    "django-filter>=22.0",
+    "django-storages>=1.13",
+    "boto3>=1.20",
+]

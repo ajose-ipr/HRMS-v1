@@ -1,0 +1,364 @@
+{% load static %}
+{% load i18n %}
+{% load horillafilters %}
+
+<!DOCTYPE html>
+<html>
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% trans "Photo Gallery" %} - {{white_label_company_name}}</title>
+    <link rel="stylesheet" href="{% static 'build/css/driver.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'build/css/style.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'build/css/sweetalert2.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <script src="{% static '/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'build/js/driver.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'site_gallery/css/gallery.css' %}" />
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+
+<body>
+    {% include 'navbar.html' %} 
+    <div id="wrapper" x-data="{ sidebarOpen: false }">
+        {% include 'sidebar.html' %}
+        <main :class="sidebarOpen ? 'oh-main__sidebar-visible' : ''">
+
+            <div class="oh-container">
+                <div class="oh-card" style="margin-bottom: 20px;">
+                    <div class="oh-card__body">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2>{% trans "Photo Gallery" %}</h2>
+                            <button class="oh-btn oh-btn--primary" onclick="openUploadModal()">
+                                {% trans "Upload Photos" %}
+                            </button>
+                        </div>
+
+                        <!-- Filter Section -->
+                        <div class="oh-filter-section" style="margin-bottom: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+                            <form method="GET" action="{% url 'site_gallery:gallery-list' %}" id="filterForm">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                    <div>
+                                        <label>{% trans "Location" %}</label>
+                                        <select name="location" class="oh-select oh-select--sm" onchange="this.form.submit()">
+                                            <option value="">{% trans "All Locations" %}</option>
+                                            {% for location in locations %}
+                                                <option value="{{ location.id }}" {% if request.GET.location|add:"0" == location.id|add:"0" %}selected{% endif %}>
+                                                    {{ location.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label>{% trans "Project" %}</label>
+                                        <select name="project" class="oh-select oh-select--sm" onchange="this.form.submit()">
+                                            <option value="">{% trans "All Projects" %}</option>
+                                            {% for project in projects %}
+                                                <option value="{{ project.id }}" {% if request.GET.project|add:"0" == project.id|add:"0" %}selected{% endif %}>
+                                                    {{ project.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label>{% trans "Uploader" %}</label>
+                                        <input type="text" name="uploader" class="oh-input" placeholder="{% trans 'Filter by uploader' %}" 
+                                            value="{{ request.GET.uploader }}" />
+                                    </div>
+
+                                    <div style="display: flex; align-items: flex-end; gap: 10px;">
+                                        <button type="submit" class="oh-btn oh-btn--secondary">{% trans "Filter" %}</button>
+                                        <a href="{% url 'site_gallery:gallery-list' %}" class="oh-btn oh-btn--outline">{% trans "Clear" %}</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Photo Grid -->
+                        <div class="gallery-grid">
+                            {% if photos %}
+                                {% for photo in photos %}
+                                    <div class="gallery-item" data-photo-id="{{ photo.id }}">
+                                        <div class="gallery-item__image-container">
+                                            <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="gallery-item__image" />
+                                            {% if request.user.is_staff %}
+                                                <div class="gallery-item__overlay">
+                                                    <button class="oh-btn oh-btn--danger oh-btn--sm" 
+                                                        onclick="deletePhoto({{ photo.id }})">
+                                                        {% trans "Delete" %}
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="gallery-item__info">
+                                            {% if photo.caption %}
+                                                <p class="gallery-item__caption">{{ photo.caption }}</p>
+                                            {% endif %}
+                                            <div class="gallery-item__metadata">
+                                                <small>
+                                                    <strong>{% trans "By:" %}</strong> {{ photo.uploader.get_full_name|default:photo.uploader.username }}
+                                                </small>
+                                            </div>
+                                            <div class="gallery-item__metadata">
+                                                <small>
+                                                    <strong>{% trans "Date:" %}</strong> {{ photo.upload_date|date:"Y-m-d H:i" }}
+                                                </small>
+                                            </div>
+                                            {% if photo.location %}
+                                                <div class="gallery-item__metadata">
+                                                    <small>
+                                                        <strong>{% trans "Location:" %}</strong> {{ photo.location.name }}
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                            {% if photo.project %}
+                                                <div class="gallery-item__metadata">
+                                                    <small>
+                                                        <strong>{% trans "Project:" %}</strong> {{ photo.project.name }}
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                                    <p>{% trans "No photos found. Upload your first photo!" %}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeUploadModal()">&times;</span>
+            <h2>{% trans "Upload Photos" %}</h2>
+            
+            <div class="oh-form-group">
+                <label>{% trans "Location" %}</label>
+                <input type="text" id="locationInput" class="oh-input" placeholder="{% trans 'Select or create location' %}" 
+                    list="locations_list" />
+                <datalist id="locations_list">
+                    {% for location in locations %}
+                        <option value="{{ location.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="oh-form-group">
+                <label>{% trans "Project" %}</label>
+                <input type="text" id="projectInput" class="oh-input" placeholder="{% trans 'Select or create project' %}" 
+                    list="projects_list" />
+                <datalist id="projects_list">
+                    {% for project in projects %}
+                        <option value="{{ project.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="oh-form-group">
+                <label>{% trans "Caption (Optional)" %}</label>
+                <textarea id="captionInput" class="oh-input" placeholder="{% trans 'Enter caption' %}" rows="3"></textarea>
+            </div>
+
+            <!-- Drag and Drop Area -->
+            <div id="dropArea" class="drop-area" style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 20px 0; border-radius: 5px; cursor: pointer;">
+                <p>{% trans "Drag and drop photos here or click to select" %}</p>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" 
+                    onchange="handleFileSelect(event)" />
+            </div>
+
+            <div id="fileList" class="file-list" style="margin: 20px 0;">
+                <!-- Selected files will be shown here -->
+            </div>
+
+            <div style="text-align: right; gap: 10px; display: flex; justify-content: flex-end;">
+                <button class="oh-btn oh-btn--secondary" onclick="closeUploadModal()">{% trans "Cancel" %}</button>
+                <button class="oh-btn oh-btn--primary" onclick="uploadPhotos()">{% trans "Upload" %}</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+
+        // Make drop area clickable
+        const dropArea = document.getElementById('dropArea');
+        dropArea.addEventListener('click', () => document.getElementById('fileInput').click());
+
+        // Drag and drop handlers
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.style.borderColor = '#007bff';
+                dropArea.style.backgroundColor = '#f0f0f0';
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.style.borderColor = '#ccc';
+                dropArea.style.backgroundColor = 'transparent';
+            });
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        function handleFileSelect(event) {
+            handleFiles(event.target.files);
+        }
+
+        function handleFiles(files) {
+            // Enforce 20-photo limit
+            if (files.length > 20) {
+                alert('{% trans "Maximum 20 photos per upload allowed" %}');
+                return;
+            }
+            selectedFiles = Array.from(files);
+            displayFileList();
+        }
+
+        function displayFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.style.cssText = 'padding: 8px; background-color: #f9f9f9; margin: 5px 0; border-radius: 3px; display: flex; justify-content: space-between; align-items: center;';
+                item.innerHTML = `
+                    <span>${file.name} (${(file.size / 1024).toFixed(2)} KB)</span>
+                    <button class="oh-btn oh-btn--danger oh-btn--sm" onclick="removeFile(${index})">Remove</button>
+                `;
+                fileList.appendChild(item);
+            });
+            
+            if (selectedFiles.length > 0) {
+                const info = document.createElement('p');
+                info.style.cssText = 'color: #666; margin: 10px 0;';
+                info.textContent = `{% trans "Selected:" %} ${selectedFiles.length} {% trans "file(s)" %}`;
+                fileList.insertBefore(info, fileList.firstChild);
+            }
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFileList();
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').style.display = 'block';
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            selectedFiles = [];
+            document.getElementById('fileList').innerHTML = '';
+            document.getElementById('fileInput').value = '';
+        }
+
+        async function uploadPhotos() {
+            if (selectedFiles.length === 0) {
+                alert('{% trans "Please select at least one file" %}');
+                return;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('images', file);
+            });
+
+            formData.append('location_name', document.getElementById('locationInput').value);
+            formData.append('project_name', document.getElementById('projectInput').value);
+            formData.append('caption', document.getElementById('captionInput').value);
+
+            try {
+                const response = await fetch('{% url "site_gallery:photo-upload" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(`{% trans "Successfully uploaded" %} ${data.count} {% trans "photo(s)" %}`);
+                    closeUploadModal();
+                    location.reload();
+                } else {
+                    alert(`{% trans "Error:" %} ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('{% trans "An error occurred during upload" %}');
+            }
+        }
+
+        async function deletePhoto(photoId) {
+            if (!confirm('{% trans "Are you sure you want to delete this photo?" %}')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/gallery/${photoId}/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                if (response.ok) {
+                    alert('{% trans "Photo deleted successfully" %}');
+                    location.reload();
+                } else {
+                    alert('{% trans "Error deleting photo" %}');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('{% trans "An error occurred" %}');
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+
+</html>

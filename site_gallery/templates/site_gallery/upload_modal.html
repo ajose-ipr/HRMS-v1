@@ -1,0 +1,56 @@
+{% load static %}
+{% load i18n %}
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="modal-close" onclick="closeUploadModal()">&times;</span>
+        <h2>{% trans "Upload Photos" %}</h2>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="oh-form-group">
+                <label>{% trans "Location" %}</label>
+                <input type="text" id="locationInput" class="oh-input" placeholder="{% trans 'Select or create location' %}" 
+                    list="locations_list" />
+                <datalist id="locations_list">
+                    {% for location in locations %}
+                        <option value="{{ location.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="oh-form-group">
+                <label>{% trans "Project" %}</label>
+                <input type="text" id="projectInput" class="oh-input" placeholder="{% trans 'Select or create project' %}" 
+                    list="projects_list" />
+                <datalist id="projects_list">
+                    {% for project in projects %}
+                        <option value="{{ project.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div class="oh-form-group">
+                <label>{% trans "Caption (Optional)" %}</label>
+                <textarea id="captionInput" class="oh-input" placeholder="{% trans 'Enter caption' %}" rows="3"></textarea>
+            </div>
+
+            <!-- Drag and Drop Area -->
+            <div id="dropArea" class="drop-area" style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 20px 0; border-radius: 5px; cursor: pointer; transition: all 0.3s ease;">
+                <p>{% trans "Drag and drop photos here or click to select" %}</p>
+                <input type="file" id="fileInput" name="images" multiple accept="image/*" style="display: none;" />
+            </div>
+
+            <div id="fileList" class="file-list">
+                <!-- Selected files will be shown here -->
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="button" class="oh-btn oh-btn--secondary" onclick="closeUploadModal()">{% trans "Cancel" %}</button>
+                <button type="submit" class="oh-btn oh-btn--primary">{% trans "Upload" %}</button>
+            </div>
+        </form>
+    </div>
+</div>

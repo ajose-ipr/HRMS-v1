@@ -152,3 +152,8 @@ whoosh_index/
 
 #PyCharm
 .idea/
+
+.history/
+
+#Venv environment
+horillavenv/

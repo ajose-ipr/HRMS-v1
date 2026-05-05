@@ -38,10 +38,12 @@ urlpatterns = [
     path("employee/", include("employee.urls")),
     path("horilla-widget/", include("horilla_widgets.urls")),
     path("api/", include("horilla_api.urls")),
+    path("", include("site_gallery.urls")),
     re_path(
         "^inbox/notifications/", include(notifications.urls, namespace="notifications")
     ),
     path("i18n/", include("django.conf.urls.i18n")),
+    
     path("health/", health_check),
 ]
 
