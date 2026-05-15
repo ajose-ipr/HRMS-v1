@@ -1,0 +1,41 @@
+{% extends "index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="oh-container">
+    <div class="oh-card">
+        <div class="oh-card__body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h1>{% trans "Expense Analysis" %}</h1>
+            </div>
+
+            {% if data %}
+                <div class="oh-table__wrapper">
+                    <table class="oh-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Month" %}</th>
+                                <th>{% trans "Category" %}</th>
+                                <th>{% trans "Estimated Cost" %}</th>
+                                <th>{% trans "Actual Cost" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data %}
+                                <tr>
+                                    <td>{{ row.month|date:"F Y" }}</td>
+                                    <td>{{ row.category }}</td>
+                                    <td>{{ row.total_estimated }}</td>
+                                    <td>{{ row.total_actual }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>{% trans "No expense data available for analysis." %}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

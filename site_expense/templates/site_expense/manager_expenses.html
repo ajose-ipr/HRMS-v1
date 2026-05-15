@@ -1,0 +1,43 @@
+{% extends "index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="oh-container">
+    <div class="oh-card">
+        <div class="oh-card__body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h1>{% trans "Team Expense Visits" %}</h1>
+            </div>
+
+            {% if visits %}
+                <div class="oh-table__wrapper">
+                    <table class="oh-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Employee" %}</th>
+                                <th>{% trans "Site" %}</th>
+                                <th>{% trans "Project" %}</th>
+                                <th>{% trans "Start Date" %}</th>
+                                <th>{% trans "End Date" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in visits %}
+                                <tr>
+                                    <td>{{ visit.employee.get_full_name|default:visit.employee.email }}</td>
+                                    <td>{{ visit.site_name }}</td>
+                                    <td>{% if visit.project %}{{ visit.project.name }}{% endif %}</td>
+                                    <td>{{ visit.start_date }}</td>
+                                    <td>{{ visit.end_date }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>{% trans "No team expense visits available." %}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,35 @@
+{% extends "index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="oh-container">
+    <div class="oh-card">
+        <div class="oh-card__body">
+            <h1>{% if edit %}{% trans "Edit Site Visit" %}{% else %}{% trans "Add Site Visit" %}{% endif %}</h1>
+
+            <form method="post" style="display:grid;gap:16px;margin-top:20px;">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div>
+                        <label class="oh-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <p style="color:red;">{{ field.errors }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div>
+                    <button type="submit" class="oh-btn oh-btn--primary">{% trans "Save" %}</button>
+                    <a href="{% url 'site_expense:my-expenses' %}" class="oh-btn oh-btn--outline">{% trans "Cancel" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    flatpickr(".flat-date", { dateFormat: "Y-m-d" });
+</script>
+{% endblock content %}

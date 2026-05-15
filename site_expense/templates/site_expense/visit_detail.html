@@ -1,0 +1,57 @@
+{% extends "index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="oh-container">
+    <div class="oh-card">
+        <div class="oh-card__body">
+            <h1>{{ visit.site_name }} — {{ visit.start_date }} to {{ visit.end_date }}</h1>
+            <p>{% trans "Duration" %}: {{ visit.duration_days }} {% trans "days" %}</p>
+            {% if visit.project %}<p>{% trans "Project" %}: {{ visit.project.name }}</p>{% endif %}
+            {% if visit.description %}<p>{{ visit.description }}</p>{% endif %}
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px;">
+                <h2>{% trans "Expenses" %}</h2>
+                <a href="{% url 'site_expense:add-expense' visit.pk %}" class="oh-btn oh-btn--primary">+ {% trans "Add Expense" %}</a>
+            </div>
+
+            {% if expenses %}
+                <div class="oh-table__wrapper">
+                    <table class="oh-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Date" %}</th>
+                                <th>{% trans "Category" %}</th>
+                                <th>{% trans "Description" %}</th>
+                                <th>{% trans "Estimated" %}</th>
+                                <th>{% trans "Actual" %}</th>
+                                <th>{% trans "Bill" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in expenses %}
+                                <tr>
+                                    <td>{{ expense.date }}</td>
+                                    <td>{{ expense.get_category_display }}</td>
+                                    <td>{{ expense.description }}</td>
+                                    <td>₹{{ expense.estimated_cost }}</td>
+                                    <td>₹{{ expense.actual_cost }}</td>
+                                    <td>
+                                        {% if expense.bill %}
+                                            <a href="{{ expense.bill.url }}" target="_blank" class="oh-btn oh-btn--outline oh-btn--sm">{% trans "View Bill" %}</a>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>{% trans "No expenses added yet." %}</p>
+            {% endif %}
+
+            <a href="{% url 'site_expense:my-expenses' %}" class="oh-btn oh-btn--outline" style="margin-top:20px;">← {% trans "Back" %}</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -35,6 +35,9 @@
     <link rel="stylesheet" href="{% static 'build/css/orgChart.css' %}" />
     <link rel="stylesheet" href="{% static '/jquery/jqueryui.css' %}">
     <link rel="stylesheet" href="{% static 'build/css/pivottable.min.css' %}" />
+    {% if request.path|slice:":14" == "/site-expense/" or request.path|slice:":13" == "/site-expense" %}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    {% endif %}
     <script src="{% static '/jquery/ajax.js' %}"></script>
     <script src="{% static '/jquery/jquery.min.js' %}"></script>
     <script src="{% static '/jquery/jqueryui.js' %}"></script>
@@ -251,6 +254,16 @@
 
     {% if "attendance"|app_installed %}
         <script src="{% static 'attendance/actions.js' %}"></script>
+    {% endif %}
+    {% if request.path|slice:":14" == "/site-expense/" or request.path|slice:":13" == "/site-expense" %}
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                if (window.flatpickr) {
+                    flatpickr(".flat-date", { dateFormat: "Y-m-d" });
+                }
+            });
+        </script>
     {% endif %}
     <script type="module" src="{% static 'images/ionicons/ui_icons/ionicons/ionicons.esm.js' %}"></script>
     <script src="{% static '/build/js/sweetAlert.js' %}"></script>

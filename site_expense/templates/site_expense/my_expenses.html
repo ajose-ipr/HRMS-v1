@@ -1,0 +1,64 @@
+{% extends "index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="oh-container">
+    <div class="oh-card">
+        <div class="oh-card__body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h1>{% trans "My Site Visits & Expenses" %}</h1>
+                <a href="{% url 'site_expense:add-visit' %}" class="oh-btn oh-btn--primary">+ {% trans "Add Site Visit" %}</a>
+            </div>
+
+            <form method="get" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;">
+                <div>
+                    <label class="oh-label">{% trans "Expense Date" %}</label>
+                    <input type="text" name="date" class="flat-date oh-input" autocomplete="off" placeholder="{% trans 'Select date' %}">
+                </div>
+                <div>
+                    <label class="oh-label">{% trans "Site Name" %}</label>
+                    <input type="text" name="site_name" class="oh-input" placeholder="{% trans 'Search site' %}">
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:10px;">
+                    <button type="submit" class="oh-btn oh-btn--primary">{% trans "Filter" %}</button>
+                    <a href="{% url 'site_expense:my-expenses' %}" class="oh-btn oh-btn--outline">{% trans "Clear" %}</a>
+                </div>
+            </form>
+
+            {% if visits %}
+                <div class="oh-table__wrapper">
+                    <table class="oh-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Site" %}</th>
+                                <th>{% trans "Project" %}</th>
+                                <th>{% trans "Start Date" %}</th>
+                                <th>{% trans "End Date" %}</th>
+                                <th>{% trans "Duration" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in visits %}
+                                <tr>
+                                    <td>{{ visit.site_name }}</td>
+                                    <td>{% if visit.project %}{{ visit.project.name }}{% endif %}</td>
+                                    <td>{{ visit.start_date }}</td>
+                                    <td>{{ visit.end_date }}</td>
+                                    <td>{{ visit.duration_days }}</td>
+                                    <td>
+                                        <a href="{% url 'site_expense:visit-detail' visit.pk %}" class="oh-btn oh-btn--outline oh-btn--sm">{% trans "View" %}</a>
+                                        <a href="{% url 'site_expense:edit-visit' visit.pk %}" class="oh-btn oh-btn--outline oh-btn--sm">{% trans "Edit" %}</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>{% trans "No site visits found yet." %}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

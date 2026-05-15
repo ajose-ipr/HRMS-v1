@@ -43,7 +43,7 @@ urlpatterns = [
         "^inbox/notifications/", include(notifications.urls, namespace="notifications")
     ),
     path("i18n/", include("django.conf.urls.i18n")),
-    
+    path("site-expense/", include("site_expense.urls")),
     path("health/", health_check),
 ]
 
