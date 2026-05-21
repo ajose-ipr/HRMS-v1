@@ -28,14 +28,23 @@ class Expense(models.Model):
         ("other", "Other"),
     ]
 
+    STATUS_CHOICES = [
+        ("estimated", "Estimated"),
+        ("finalized", "Finalized"),
+    ]
+
     site_visit = models.ForeignKey(SiteVisit, on_delete=models.CASCADE, related_name="expenses")
     date = models.DateField()
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     description = models.TextField()
     estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
-    actual_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    actual_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     bill = models.FileField(upload_to="site_expense/bills/%Y/%m/", blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="estimated")
     submitted_at = models.DateTimeField(auto_now_add=True)
 
+    def is_finalized(self):
+        return self.status == "finalized"
+
     def __str__(self):
-        return f"{self.site_visit} - {self.category} - {self.date}"
+        return f"{self.site_visit} - {self.category} - {self.date} ({self.status})"

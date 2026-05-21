@@ -6,7 +6,11 @@ from django.contrib import messages
 
 from horilla.methods import handle_no_permission
 from site_expense.models import Expense, SiteVisit
-from site_expense.forms import SiteVisitForm, ExpenseForm
+from site_expense.forms import SiteVisitForm, ExpenseForm, ActualExpenseForm
+
+
+def can_finalize_expense(user):
+    return user.is_staff or user.has_perm("site_expense.change_expense")
 
 
 @login_required
@@ -49,10 +53,36 @@ def add_expense(request, visit_pk):
     if request.method == "POST" and form.is_valid():
         expense = form.save(commit=False)
         expense.site_visit = visit
+        expense.status = "estimated"
         expense.save()
-        messages.success(request, "Expense added successfully.")
+        messages.success(request, "Expense estimate added successfully.")
         return redirect("site_expense:visit-detail", pk=visit_pk)
-    return render(request, "site_expense/add_expense.html", {"form": form, "visit": visit})
+    return render(request, "site_expense/add_expense.html", {"form": form, "visit": visit, "form_title": "Add Expense Estimate"})
+
+
+@login_required
+def finalize_expense(request, pk):
+    if not can_finalize_expense(request.user):
+        return handle_no_permission(request)
+
+    expense = get_object_or_404(Expense, pk=pk)
+    if expense.is_finalized():
+        messages.warning(request, "This expense has already been finalized.")
+        return redirect("site_expense:visit-detail", pk=expense.site_visit.pk)
+
+    form = ActualExpenseForm(request.POST or None, request.FILES or None, instance=expense)
+    if request.method == "POST" and form.is_valid():
+        expense = form.save(commit=False)
+        expense.status = "finalized"
+        expense.save()
+        messages.success(request, "Actual expense recorded successfully.")
+        return redirect("site_expense:visit-detail", pk=expense.site_visit.pk)
+
+    return render(
+        request,
+        "site_expense/finalize_expense.html",
+        {"form": form, "expense": expense, "form_title": "Record Actual Expense"},
+    )
 
 
 @login_required
@@ -60,7 +90,15 @@ def visit_detail(request, pk):
     employee = request.user.employee_get
     visit = get_object_or_404(SiteVisit, pk=pk, employee=employee)
     expenses = visit.expenses.all().order_by("date")
-    return render(request, "site_expense/visit_detail.html", {"visit": visit, "expenses": expenses})
+    return render(
+        request,
+        "site_expense/visit_detail.html",
+        {
+            "visit": visit,
+            "expenses": expenses,
+            "can_finalize": can_finalize_expense(request.user),
+        },
+    )
 
 
 @login_required

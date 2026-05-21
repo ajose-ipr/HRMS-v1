@@ -26,6 +26,8 @@
                                 <th>{% trans "Estimated" %}</th>
                                 <th>{% trans "Actual" %}</th>
                                 <th>{% trans "Bill" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Action" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -35,11 +37,19 @@
                                     <td>{{ expense.get_category_display }}</td>
                                     <td>{{ expense.description }}</td>
                                     <td>₹{{ expense.estimated_cost }}</td>
-                                    <td>₹{{ expense.actual_cost }}</td>
+                                    <td>{% if expense.actual_cost %}₹{{ expense.actual_cost }}{% else %}—{% endif %}</td>
                                     <td>
                                         {% if expense.bill %}
                                             <a href="{{ expense.bill.url }}" target="_blank" class="oh-btn oh-btn--outline oh-btn--sm">{% trans "View Bill" %}</a>
                                         {% else %}—{% endif %}
+                                    </td>
+                                    <td>{{ expense.get_status_display }}</td>
+                                    <td>
+                                        {% if can_finalize and not expense.is_finalized %}
+                                            <a href="{% url 'site_expense:finalize-expense' expense.pk %}" class="oh-btn oh-btn--outline oh-btn--sm">{% trans "Finalize" %}</a>
+                                        {% else %}
+                                            —
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
